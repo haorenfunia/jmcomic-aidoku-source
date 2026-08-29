@@ -26,8 +26,7 @@ jobs:
       - name: Install Aidoku CLI
         run: cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
       - name: Build source package
-        working-directory: sources/zh.jmcomic
-        run: aidoku package
+        run: aidoku package sources/zh.jmcomic
       - name: Build source index
         run: aidoku build sources/zh.jmcomic/package.aix --name "JMComic Aidoku Source"
       - name: Configure Pages
