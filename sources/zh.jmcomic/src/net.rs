@@ -139,7 +139,7 @@ pub mod url {
 	}
 
 	pub fn filter(order: &str, category: &str, page: i32) -> String {
-		let path = match category {
+		let path: String = match category {
 			"hanman" => "/albums/hanman?".into(),
 			"japanese" => "/albums/japanese?".into(),
 			"meiman" => "/albums/meiman?".into(),
