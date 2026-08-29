@@ -229,16 +229,40 @@ impl JMComic {
 		filters: &'a [FilterValue],
 	) -> (&'a str, &'a str, &'a str, Option<&'a str>) {
 		let mut order = "mr";
-		let mut category = "";
+		let mut category = "hanman";
+		let mut category_selected = false;
 		let mut status = "";
 		let mut keyword = query.filter(|s| !s.is_empty());
 		for filter in filters {
 			match filter {
-				FilterValue::Select { id, value } if !value.is_empty() => match id.as_str() {
-					"sort" => order = value,
-					"category" | "language" if category.is_empty() => category = value,
-					"genre" | "tag" => keyword = Some(value),
-					"status" => status = value,
+				FilterValue::Select { id, value } => match id.as_str() {
+					"sort" if !value.is_empty() => {
+						order = match value.as_str() {
+							"最新漫画" => "mr",
+							"最多爱心" => "tf",
+							"总排行" => "mv",
+							"月排行" => "mp",
+							"日排行" => "md",
+							_ => value,
+						};
+					}
+					"category" | "language" => {
+						category_selected = true;
+						category = match value.as_str() {
+							"韩漫" | "韩漫追新" | "hanmansfw" => "hanman",
+							"全部" => "",
+							_ => value,
+						};
+					}
+					"genre" | "tag" if !value.is_empty() => keyword = Some(value),
+					"status" if !value.is_empty() => {
+						status = match value.as_str() {
+							"连载中" => "ongoing",
+							"已完结" => "completed",
+							"短篇" => "short",
+							_ => value,
+						};
+					}
 					_ => {}
 				},
 				FilterValue::Text { id, value }
@@ -248,6 +272,9 @@ impl JMComic {
 				}
 				_ => {}
 			}
+		}
+		if !category_selected {
+			category = "hanman";
 		}
 		if status == "short" && category.is_empty() {
 			category = "short";
