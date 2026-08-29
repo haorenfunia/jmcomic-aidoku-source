@@ -8,6 +8,11 @@ use serde::{Serialize, de::DeserializeOwned};
 const AUTH_DATA_KEY: &str = "authData";
 const JUST_LOGGED_IN_KEY: &str = "justLoggedIn";
 const BLOCKED_CONTENT_KEY: &str = "blockedMetadataKeywords";
+const MIRROR_DOMAIN_KEY: &str = "mirrorDomain";
+
+pub fn mirror_domain() -> Option<String> {
+	get_str(MIRROR_DOMAIN_KEY)
+}
 
 fn get_str(key: &str) -> Option<String> {
 	defaults_get::<String>(key).filter(|v| !v.is_empty())

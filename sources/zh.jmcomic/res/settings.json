@@ -1,6 +1,37 @@
 [
 	{
 		"type": "group",
+		"title": "网络",
+		"items": [
+			{
+				"type": "picker",
+				"key": "mirrorDomain",
+				"title": "镜像网址",
+				"values": [
+					"18comic.vip",
+					"18comic.ink",
+					"jmcomic-zzz.one",
+					"jmcomic-zzz.org",
+					"comic18j-ria.cc",
+					"jm18c-dfg.org",
+					"comic18j-ria.me"
+				],
+				"titles": [
+					"主站 1 (18comic.vip)",
+					"主站 2 (18comic.ink)",
+					"东南亚线路 1 (jmcomic-zzz.one)",
+					"东南亚线路 2 (jmcomic-zzz.org)",
+					"内地线路 1 (comic18j-ria.cc)",
+					"内地线路 2 (jm18c-dfg.org)",
+					"内地线路 3 (comic18j-ria.me)"
+				],
+				"default": "18comic.vip",
+				"refreshes": ["content"]
+			}
+		]
+	},
+	{
+		"type": "group",
 		"title": "账号",
 		"items": [
 			{
