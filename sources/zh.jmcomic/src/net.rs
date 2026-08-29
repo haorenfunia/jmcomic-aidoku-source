@@ -19,6 +19,7 @@ const DOMAIN_REFRESH_URLS: [&str; 2] = [
 	"https://rup4a04-c02.tos-cn-hongkong.bytepluses.com/newsvr-2025.txt",
 ];
 const DOMAIN_REFRESH_SECRET: &str = "diosfjckwpqpdfjkvnqQjsik";
+const DEFAULT_DOMAIN: &str = "18comic.vip";
 
 const JM_VERSION: &str = "2.0.16";
 pub const JM_UA: &str = "Mozilla/5.0 (Linux; Android 10; K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.0.0 Mobile Safari/537.36";
@@ -57,33 +58,67 @@ impl ApiContext {
 
 pub fn context() -> Result<ApiContext> {
 	let ts = current_ts();
-	for domain in domain_candidates() {
-		for shunt in PREFERRED_IMAGE_SHUNTS {
-			if let Ok(setting) = api_get_on_domain_with_auth::<SettingData>(
-				&domain,
-				&url::setting_path(shunt),
-				ts,
-				None,
-			) && let Some(cdn_base) = setting.img_host.as_deref().and_then(normalize_cdn_base)
-			{
-				return Ok(ApiContext { domain, cdn_base });
-			}
-		}
-	}
-	Err(error!("当前所有域名都暂时不可用"))
-}
-
-fn domain_candidates() -> Vec<String> {
+	let selected = settings::mirror_domain().and_then(|domain| normalize_domain(&domain));
 	let mut domains = Vec::new();
-	if let Some(selected) = settings::mirror_domain()
-		.and_then(|domain| normalize_domain(&domain))
-	{
-		domains.push(selected);
+	if let Some(domain) = selected.as_deref().filter(|domain| *domain != DEFAULT_DOMAIN) {
+		domains.push(domain.into());
 	}
 	for domain in fetch_domain_candidates() {
 		if !domains.iter().any(|current| current == &domain) {
 			domains.push(domain);
 		}
+	}
+	if let Some(domain) = selected {
+		if !domains.iter().any(|current| current == &domain) {
+			domains.push(domain);
+		}
+	} else {
+		domains.push(DEFAULT_DOMAIN.into());
+	}
+
+	for domain in domains {
+		if let Some(ctx) = context_on_domain(&domain, ts) {
+			return Ok(ctx);
+		}
+	}
+	Err(error!("当前所有域名都暂时不可用"))
+}
+
+fn context_on_domain(domain: &str, ts: u64) -> Option<ApiContext> {
+	for shunt in PREFERRED_IMAGE_SHUNTS {
+		if let Ok(setting) = api_get_on_domain_with_auth::<SettingData>(
+			domain,
+			&url::setting_path(shunt),
+			ts,
+			None,
+		) && let Some(cdn_base) = setting.img_host.as_deref().and_then(normalize_cdn_base)
+		{
+			return Some(ApiContext {
+				domain: domain.into(),
+				cdn_base,
+			});
+		}
+	}
+	None
+}
+
+fn domain_candidates() -> Vec<String> {
+	let mut domains = Vec::new();
+	let selected = settings::mirror_domain().and_then(|domain| normalize_domain(&domain));
+	if let Some(selected) = selected.as_deref().filter(|domain| *domain != DEFAULT_DOMAIN) {
+		domains.push(selected.into());
+	}
+	for domain in fetch_domain_candidates() {
+		if !domains.iter().any(|current| current == &domain) {
+			domains.push(domain);
+		}
+	}
+	if let Some(selected) = selected {
+		if !domains.iter().any(|current| current == &selected) {
+			domains.push(selected);
+		}
+	} else {
+		domains.push(DEFAULT_DOMAIN.into());
 	}
 	domains
 }

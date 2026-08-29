@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
 	BasicLoginHandler, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, HashMap,
-	ImageRequestProvider, ImageResponse, Listing, ListingProvider, Manga, MangaPageResult,
+	Home, ImageRequestProvider, ImageResponse, Listing, ListingProvider, Manga, MangaPageResult,
 	NotificationHandler, Page, PageContent, PageContext, PageImageProcessor, Result, Source,
 	alloc::{String, Vec, vec},
 	canvas::Rect,
@@ -43,24 +43,18 @@ impl Source for JMComic {
 
 		if let Some(kw) = keyword {
 			if block.is_blocked("", [kw]) {
-				return finish_search_result(page, MangaPageResult::default());
+				return Ok(MangaPageResult::default());
 			}
 			if page <= 1
 				&& category.is_empty()
 				&& let Some(key) = parse_manga_key(&api, kw)?
 			{
-				return finish_search_result(page, direct_manga_result(&api, &key, &block)?);
+				return direct_manga_result(&api, &key, &block);
 			}
-			return finish_search_result(
-				page,
-				search_result(&api, &net::url::search(kw, order, category, page), &block, status, category)?,
-			);
+			return search_result(&api, &net::url::search(kw, order, category, page), &block, status);
 		}
 
-		finish_search_result(
-			page,
-			search_result(&api, &net::url::filter(order, category, page), &block, status, category)?,
-		)
+		search_result(&api, &net::url::filter(order, category, page), &block, status)
 	}
 
 	fn get_manga_update(
@@ -107,25 +101,6 @@ impl Source for JMComic {
 				}
 			})
 			.collect())
-	}
-}
-
-impl ListingProvider for JMComic {
-	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
-		let api = net::context()?;
-		let block = block_ctx(None);
-		match listing.id.as_str() {
-			"korean-latest" => search_result(&api, &net::url::filter("mr", "hanmansfw", page), &block, "", "hanmansfw"),
-			id if id.starts_with("promo:") => home::listing_page(&api, &id[6..], page, &block),
-			id => {
-				if let Some(q) = id.strip_prefix("q:")
-					&& block.is_blocked("", [q])
-				{
-					return Ok(MangaPageResult::default());
-				}
-				search_result(&api, &Self::listing_url(id, page)?, &block, "", "")
-			}
-		}
 	}
 }
 
@@ -200,7 +175,13 @@ impl DeepLinkHandler for JMComic {
 impl ImageRequestProvider for JMComic {
 	fn get_image_request(&self, url: String, _context: Option<PageContext>) -> Result<Request> {
 		Ok(Request::get(url)?
-			.header("referer", "https://localhost/")
+			.header(
+				"referer",
+				&format!(
+					"https://{}/",
+					settings::mirror_domain().unwrap_or_else(|| "18comic.vip".into())
+				),
+			)
 			.header("user-agent", net::JM_UA)
 			.header("x-requested-with", net::JM_PKG))
 	}
@@ -243,16 +224,40 @@ impl JMComic {
 		filters: &'a [FilterValue],
 	) -> (&'a str, &'a str, &'a str, Option<&'a str>) {
 		let mut order = "mr";
-		let mut category = "";
+		let mut category = "hanman";
+		let mut category_selected = false;
 		let mut status = "";
 		let mut keyword = query.filter(|s| !s.is_empty());
 		for filter in filters {
 			match filter {
-				FilterValue::Select { id, value } if !value.is_empty() => match id.as_str() {
-					"sort" => order = value,
-					"category" | "language" if category.is_empty() => category = value,
-					"genre" | "tag" => keyword = Some(value),
-					"status" => status = value,
+				FilterValue::Select { id, value } => match id.as_str() {
+					"sort" if !value.is_empty() => {
+						order = match value.as_str() {
+							"最新漫画" => "mr",
+							"最多爱心" => "tf",
+							"总排行" => "mv",
+							"月排行" => "mp",
+							"日排行" => "md",
+							_ => value,
+						};
+					}
+					"category" | "language" => {
+						category_selected = true;
+						category = match value.as_str() {
+							"韩漫" | "韓漫" | "韩漫追新" | "hanman" | "hanmansfw" => "hanman",
+							"全部" => "",
+							_ => value,
+						};
+					}
+					"genre" | "tag" if !value.is_empty() => keyword = Some(value),
+					"status" if !value.is_empty() => {
+						status = match value.as_str() {
+							"连载中" => "ongoing",
+							"已完结" => "completed",
+							"短篇" => "short",
+							_ => value,
+						};
+					}
 					_ => {}
 				},
 				FilterValue::Text { id, value }
@@ -263,23 +268,13 @@ impl JMComic {
 				_ => {}
 			}
 		}
+		if !category_selected {
+			category = "hanman";
+		}
 		if status == "short" && category.is_empty() {
 			category = "short";
 		}
 		(order, category, status, keyword)
-	}
-
-	fn listing_url(id: &str, page: i32) -> Result<String> {
-		if let Some(order) = id.strip_prefix("o:") {
-			return Ok(net::url::filter(order, "", page));
-		}
-		if let Some(query) = id.strip_prefix("q:") {
-			return Ok(net::url::search(query, "mr", "", page));
-		}
-		if let Some(slug) = id.strip_prefix("cat:") {
-			return Ok(net::url::filter("mr", slug, page));
-		}
-		bail!("未知列表请求")
 	}
 
 	// returns the number of horizontal slices used to scramble the image
@@ -336,12 +331,11 @@ fn search_result(
 	path: &str,
 	block: &BlockState,
 	status: &str,
-	category: &str,
 ) -> Result<MangaPageResult> {
 	let resp: SearchResp = api.get(path)?;
 	Ok(MangaPageResult {
 		has_next_page: resp.total > PAGE_SIZE,
-		entries: resp.into_manga_list_filtered(&api.cdn_base, block, status, category),
+		entries: resp.into_manga_list_filtered(&api.cdn_base, block, status),
 	})
 }
 
@@ -362,13 +356,6 @@ fn visible_album(api: &ApiContext, key: &str, block: &BlockState) -> Result<Albu
 		bail!("这个内容已经被你屏蔽啦")
 	}
 	Ok(resp)
-}
-
-fn finish_search_result(page: i32, result: MangaPageResult) -> Result<MangaPageResult> {
-	if page <= 1 && result.entries.is_empty() {
-		bail!("没有找到这样的内容")
-	}
-	Ok(result)
 }
 
 fn parse_manga_key(api: &ApiContext, query: &str) -> Result<Option<String>> {
@@ -400,6 +387,7 @@ fn extract_id(url: &str, marker: &str) -> Option<String> {
 
 register_source!(
 	JMComic,
+	Home,
 	ListingProvider,
 	ImageRequestProvider,
 	PageImageProcessor,

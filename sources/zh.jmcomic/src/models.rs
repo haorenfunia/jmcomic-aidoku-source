@@ -152,7 +152,7 @@ fn has_japanese(s: &str) -> bool {
 
 impl SearchResp {
 	pub fn into_manga_list(self, cdn_base: &str, ctx: &BlockState) -> Vec<Manga> {
-		self.into_manga_list_filtered(cdn_base, ctx, "", "")
+		self.into_manga_list_filtered(cdn_base, ctx, "")
 	}
 
 	pub fn into_manga_list_filtered(
@@ -160,12 +160,10 @@ impl SearchResp {
 		cdn_base: &str,
 		ctx: &BlockState,
 		status: &str,
-		category: &str,
 	) -> Vec<Manga> {
 		self.content
 			.into_iter()
 			.filter(|item| !item.is_blocked(ctx))
-			.filter(|item| item.matches_category(category))
 			.filter(|item| match status {
 				"ongoing" => item.mhstatus == 0,
 				"completed" => item.mhstatus == 1,
@@ -192,31 +190,6 @@ impl ComicItem {
 
 	pub fn is_blocked(&self, ctx: &BlockState) -> bool {
 		ctx.is_blocked(&self.id, self.block_fields())
-	}
-
-	fn matches_category(&self, category: &str) -> bool {
-		if category != "hanmansfw" {
-			return true;
-		}
-		let labels = [
-			self.category.as_ref().and_then(|c| c.title.as_deref()),
-			self.category_sub.as_ref().and_then(|c| c.title.as_deref()),
-		]
-		.into_iter()
-		.flatten();
-		let mut has_category = false;
-		let mut is_korean = false;
-		for label in labels {
-			has_category = true;
-			is_korean |= matches!(label, "韩漫" | "一般向韩漫" | "韩国" | "条漫")
-				|| label.eq_ignore_ascii_case("webtoon");
-		}
-		for label in self.tags.iter().flatten().map(String::as_str) {
-			has_category = true;
-			is_korean |= matches!(label, "韩漫" | "一般向韩漫" | "韩国" | "条漫")
-				|| label.eq_ignore_ascii_case("webtoon");
-		}
-		!has_category || is_korean
 	}
 
 	pub fn into_manga(self, cdn_base: &str) -> Manga {
@@ -584,6 +557,7 @@ impl From<PromoteItem> for ComicItem {
 			description: None,
 			category: value.category,
 			category_sub: value.category_sub,
+			tags: None,
 			mhstatus: 0,
 		}
 	}

@@ -8,6 +8,12 @@
 				"key": "mirrorDomain",
 				"title": "镜像网址",
 				"values": [
+					"",
+					"www.cdnhjk.net",
+					"www.cdngwc.cc",
+					"www.cdngwc.net",
+					"www.cdngwc.club",
+					"www.cdnutc.me",
 					"18comic.vip",
 					"18comic.ink",
 					"jmcomic-zzz.one",
@@ -17,6 +23,12 @@
 					"comic18j-ria.me"
 				],
 				"titles": [
+					"自动选择（推荐）",
+					"动态线路 1 (www.cdnhjk.net)",
+					"动态线路 2 (www.cdngwc.cc)",
+					"动态线路 3 (www.cdngwc.net)",
+					"动态线路 4 (www.cdngwc.club)",
+					"动态线路 5 (www.cdnutc.me)",
 					"主站 1 (18comic.vip)",
 					"主站 2 (18comic.ink)",
 					"东南亚线路 1 (jmcomic-zzz.one)",
@@ -25,7 +37,7 @@
 					"内地线路 2 (jm18c-dfg.org)",
 					"内地线路 3 (comic18j-ria.me)"
 				],
-				"default": "18comic.vip",
+				"default": "",
 				"refreshes": ["content"]
 			}
 		]
