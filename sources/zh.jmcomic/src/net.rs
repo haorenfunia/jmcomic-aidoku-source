@@ -139,16 +139,12 @@ pub mod url {
 	}
 
 	pub fn filter(order: &str, category: &str, page: i32) -> String {
-		let path: String = match category {
-			"hanman" => "/albums/hanman?".into(),
-			"japanese" => "/albums/japanese?".into(),
-			"meiman" => "/albums/meiman?".into(),
-			"doujin" => "/albums/doujin?".into(),
-			"single" => "/albums/single?".into(),
-			"short" => "/albums/short?".into(),
-			_ => "/albums?".into(),
-		};
-		format!("{path}o={}&page={}", order, page)
+		if category.is_empty() {
+			format!("/categories/filter?o={}&page={}", order, page)
+		} else {
+			let c = encode_uri_component(category);
+			format!("/categories/filter?o={}&c={}&page={}", order, c, page)
+		}
 	}
 
 	pub fn promote(page: i32) -> String {
