@@ -399,7 +399,6 @@ fn extract_id(url: &str, marker: &str) -> Option<String> {
 
 register_source!(
 	JMComic,
-	Home,
 	ListingProvider,
 	ImageRequestProvider,
 	PageImageProcessor,
