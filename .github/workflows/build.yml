@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "sources/**"
+      - "Cargo.toml"
       - ".github/workflows/build.yml"
   workflow_dispatch:
 
