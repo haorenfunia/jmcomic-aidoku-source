@@ -53,13 +53,13 @@ impl Source for JMComic {
 			}
 			return finish_search_result(
 				page,
-				search_result(&api, &net::url::search(kw, order, category, page), &block, status)?,
+				search_result(&api, &net::url::search(kw, order, category, page), &block, status, category)?,
 			);
 		}
 
 		finish_search_result(
 			page,
-			search_result(&api, &net::url::filter(order, category, page), &block, status)?,
+			search_result(&api, &net::url::filter(order, category, page), &block, status, category)?,
 		)
 	}
 
@@ -115,7 +115,7 @@ impl ListingProvider for JMComic {
 		let api = net::context()?;
 		let block = block_ctx(None);
 		match listing.id.as_str() {
-			"korean-latest" => search_result(&api, &net::url::filter("mr", "hanmansfw", page), &block, ""),
+			"korean-latest" => search_result(&api, &net::url::filter("mr", "hanmansfw", page), &block, "", "hanmansfw"),
 			id if id.starts_with("promo:") => home::listing_page(&api, &id[6..], page, &block),
 			id => {
 				if let Some(q) = id.strip_prefix("q:")
@@ -123,7 +123,7 @@ impl ListingProvider for JMComic {
 				{
 					return Ok(MangaPageResult::default());
 				}
-				search_result(&api, &Self::listing_url(id, page)?, &block, "")
+				search_result(&api, &Self::listing_url(id, page)?, &block, "", "")
 			}
 		}
 	}
@@ -336,11 +336,12 @@ fn search_result(
 	path: &str,
 	block: &BlockState,
 	status: &str,
+	category: &str,
 ) -> Result<MangaPageResult> {
 	let resp: SearchResp = api.get(path)?;
 	Ok(MangaPageResult {
 		has_next_page: resp.total > PAGE_SIZE,
-		entries: resp.into_manga_list_filtered(&api.cdn_base, block, status),
+		entries: resp.into_manga_list_filtered(&api.cdn_base, block, status, category),
 	})
 }
 

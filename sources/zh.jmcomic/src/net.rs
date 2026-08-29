@@ -57,7 +57,7 @@ impl ApiContext {
 
 pub fn context() -> Result<ApiContext> {
 	let ts = current_ts();
-	for domain in fetch_domain_candidates() {
+	for domain in domain_candidates() {
 		for shunt in PREFERRED_IMAGE_SHUNTS {
 			if let Ok(setting) = api_get_on_domain_with_auth::<SettingData>(
 				&domain,
@@ -71,6 +71,21 @@ pub fn context() -> Result<ApiContext> {
 		}
 	}
 	Err(error!("当前所有域名都暂时不可用"))
+}
+
+fn domain_candidates() -> Vec<String> {
+	let mut domains = Vec::new();
+	if let Some(selected) = settings::mirror_domain()
+		.and_then(|domain| normalize_domain(&domain))
+	{
+		domains.push(selected);
+	}
+	for domain in fetch_domain_candidates() {
+		if !domains.iter().any(|current| current == &domain) {
+			domains.push(domain);
+		}
+	}
+	domains
 }
 
 pub mod url {
@@ -324,7 +339,7 @@ pub fn login(username: &str, password: &str) -> Result<AuthData> {
 		encode_uri_component(username),
 		encode_uri_component(password)
 	);
-	let domains = fetch_domain_candidates();
+	let domains = domain_candidates();
 	if domains.is_empty() {
 		return Err(error!("域名列表为空"));
 	}
