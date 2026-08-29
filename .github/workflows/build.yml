@@ -1,0 +1,42 @@
+name: Build and publish Aidoku source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sources/**"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Install Aidoku CLI
+        run: cargo install --git https://github.com/Aidoku/aidoku-rs aidoku-cli
+      - name: Build source package
+        working-directory: sources/zh.jmcomic
+        run: aidoku package
+      - name: Build source index
+        run: aidoku build sources/zh.jmcomic/package.aix --name "JMComic Aidoku Source"
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
