@@ -151,6 +151,7 @@ fn large_promote_page(
 				description: None,
 				category: None,
 				category_sub: None,
+				mhstatus: 0,
 			})
 		})
 		.collect();
