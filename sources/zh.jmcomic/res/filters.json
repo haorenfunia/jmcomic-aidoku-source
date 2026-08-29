@@ -4,8 +4,8 @@
 		"id": "language",
 		"title": "地区",
 		"options": ["全部", "日漫", "韩漫", "美漫"],
-		"ids": ["", "japanese", "hanmansfw", "meiman"],
-		"default": "hanmansfw"
+		"ids": ["", "japanese", "hanman", "meiman"],
+		"default": "hanman"
 	},
 	{
 		"type": "select",

@@ -2,27 +2,13 @@
 	"info": {
 		"id": "zh.jmcomic",
 		"name": "禁漫天堂",
-		"version": 5,
+		"version": 6,
 		"languages": [
 			"zh"
 		],
 		"contentRating": 2,
 		"url": "https://18comic.vip"
 	},
-	"listings": [
-		{
-			"id": "korean-latest",
-			"name": "韩漫追新"
-		},
-		{
-			"id": "o:mr",
-			"name": "最新漫画"
-		},
-		{
-			"id": "o:tf",
-			"name": "最多爱心"
-		}
-	],
 	"config": {
 		"hidesFiltersWhileSearching": true,
 		"supportsTagSearch": true,
