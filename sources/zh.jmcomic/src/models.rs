@@ -195,7 +195,7 @@ impl ComicItem {
 	}
 
 	fn matches_category(&self, category: &str) -> bool {
-		if category != "hanmansfw" {
+		if category != "hanman" {
 			return true;
 		}
 		let labels = [
@@ -216,7 +216,7 @@ impl ComicItem {
 			is_korean |= matches!(label, "韩漫" | "一般向韩漫" | "韩国" | "条漫")
 				|| label.eq_ignore_ascii_case("webtoon");
 		}
-		!has_category || is_korean
+		has_category && is_korean
 	}
 
 	pub fn into_manga(self, cdn_base: &str) -> Manga {

@@ -1,7 +1,7 @@
 #![no_std]
 use aidoku::{
 	BasicLoginHandler, Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, HashMap,
-	ImageRequestProvider, ImageResponse, Listing, ListingProvider, Manga, MangaPageResult,
+	ImageRequestProvider, ImageResponse, Manga, MangaPageResult,
 	NotificationHandler, Page, PageContent, PageContext, PageImageProcessor, Result, Source,
 	alloc::{String, Vec, vec},
 	canvas::Rect,
@@ -12,7 +12,6 @@ use aidoku::{
 	prelude::*,
 };
 
-mod home;
 mod models;
 mod net;
 mod settings;
@@ -110,25 +109,6 @@ impl Source for JMComic {
 	}
 }
 
-impl ListingProvider for JMComic {
-	fn get_manga_list(&self, listing: Listing, page: i32) -> Result<MangaPageResult> {
-		let api = net::context()?;
-		let block = block_ctx(None);
-		match listing.id.as_str() {
-			"korean-latest" => search_result(&api, &net::url::filter("mr", "hanmansfw", page), &block, "", "hanmansfw"),
-			id if id.starts_with("promo:") => home::listing_page(&api, &id[6..], page, &block),
-			id => {
-				if let Some(q) = id.strip_prefix("q:")
-					&& block.is_blocked("", [q])
-				{
-					return Ok(MangaPageResult::default());
-				}
-				search_result(&api, &Self::listing_url(id, page)?, &block, "", "")
-			}
-		}
-	}
-}
-
 impl PageImageProcessor for JMComic {
 	fn process_page_image(
 		&self,
@@ -200,7 +180,13 @@ impl DeepLinkHandler for JMComic {
 impl ImageRequestProvider for JMComic {
 	fn get_image_request(&self, url: String, _context: Option<PageContext>) -> Result<Request> {
 		Ok(Request::get(url)?
-			.header("referer", "https://localhost/")
+			.header(
+				"referer",
+				&format!(
+					"https://{}/",
+					settings::mirror_domain().unwrap_or_else(|| "18comic.vip".into())
+				),
+			)
 			.header("user-agent", net::JM_UA)
 			.header("x-requested-with", net::JM_PKG))
 	}
@@ -267,19 +253,6 @@ impl JMComic {
 			category = "short";
 		}
 		(order, category, status, keyword)
-	}
-
-	fn listing_url(id: &str, page: i32) -> Result<String> {
-		if let Some(order) = id.strip_prefix("o:") {
-			return Ok(net::url::filter(order, "", page));
-		}
-		if let Some(query) = id.strip_prefix("q:") {
-			return Ok(net::url::search(query, "mr", "", page));
-		}
-		if let Some(slug) = id.strip_prefix("cat:") {
-			return Ok(net::url::filter("mr", slug, page));
-		}
-		bail!("未知列表请求")
 	}
 
 	// returns the number of horizontal slices used to scramble the image
@@ -400,7 +373,6 @@ fn extract_id(url: &str, marker: &str) -> Option<String> {
 
 register_source!(
 	JMComic,
-	ListingProvider,
 	ImageRequestProvider,
 	PageImageProcessor,
 	DeepLinkHandler,
