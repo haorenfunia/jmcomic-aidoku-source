@@ -331,6 +331,7 @@ fn search_result(
 	path: &str,
 	block: &BlockState,
 	status: &str,
+	category: &str,
 ) -> Result<MangaPageResult> {
 	let resp: SearchResp = api.get(path)?;
 	Ok(MangaPageResult {
