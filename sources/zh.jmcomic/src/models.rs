@@ -584,6 +584,7 @@ impl From<PromoteItem> for ComicItem {
 			description: None,
 			category: value.category,
 			category_sub: value.category_sub,
+			tags: None,
 			mhstatus: 0,
 		}
 	}

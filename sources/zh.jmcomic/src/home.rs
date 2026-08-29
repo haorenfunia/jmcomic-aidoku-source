@@ -26,6 +26,7 @@ impl Home for JMComic {
 			&net::url::filter("mr", "hanmansfw", 1),
 			&block,
 			"",
+			"hanmansfw",
 		)
 		.map(|result| result.entries.into_iter().map(Manga::into).take(30).collect())
 		.unwrap_or_default();
@@ -151,6 +152,7 @@ fn large_promote_page(
 				description: None,
 				category: None,
 				category_sub: None,
+				tags: None,
 				mhstatus: 0,
 			})
 		})
