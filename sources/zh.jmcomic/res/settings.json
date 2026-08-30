@@ -7,36 +7,8 @@
 				"type": "picker",
 				"key": "mirrorDomain",
 				"title": "镜像网址",
-				"values": [
-					"",
-					"www.cdnhjk.net",
-					"www.cdngwc.cc",
-					"www.cdngwc.net",
-					"www.cdngwc.club",
-					"www.cdnutc.me",
-					"18comic.vip",
-					"18comic.ink",
-					"jmcomic-zzz.one",
-					"jmcomic-zzz.org",
-					"comic18j-ria.cc",
-					"jm18c-dfg.org",
-					"comic18j-ria.me"
-				],
-				"titles": [
-					"自动选择（推荐）",
-					"动态线路 1 (www.cdnhjk.net)",
-					"动态线路 2 (www.cdngwc.cc)",
-					"动态线路 3 (www.cdngwc.net)",
-					"动态线路 4 (www.cdngwc.club)",
-					"动态线路 5 (www.cdnutc.me)",
-					"主站 1 (18comic.vip)",
-					"主站 2 (18comic.ink)",
-					"东南亚线路 1 (jmcomic-zzz.one)",
-					"东南亚线路 2 (jmcomic-zzz.org)",
-					"内地线路 1 (comic18j-ria.cc)",
-					"内地线路 2 (jm18c-dfg.org)",
-					"内地线路 3 (comic18j-ria.me)"
-				],
+				"values": ["", "18comic.vip", "18comic.ink", "jmcomic-zzz.one", "jmcomic-zzz.org", "www.cdnhjk.net", "www.cdngwc.cc", "www.cdngwc.net", "www.cdngwc.club", "www.cdnutc.me", "comic18j-ria.cc", "jm18c-dfg.org", "comic18j-ria.me"],
+				"titles": ["自动选择（推荐）", "主站 1 (18comic.vip)", "主站 2 (18comic.ink)", "东南亚线路 1 (jmcomic-zzz.one)", "东南亚线路 2 (jmcomic-zzz.org)", "动态线路 1 (www.cdnhjk.net)", "动态线路 2 (www.cdngwc.cc)", "动态线路 3 (www.cdngwc.net)", "动态线路 4 (www.cdngwc.club)", "动态线路 5 (www.cdnutc.me)", "内地线路 1 (comic18j-ria.cc)", "内地线路 2 (jm18c-dfg.org)", "内地线路 3 (comic18j-ria.me)"],
 				"default": "",
 				"refreshes": ["content"]
 			}
@@ -44,23 +16,8 @@
 	},
 	{
 		"type": "group",
-		"title": "账号",
-		"items": [
-			{
-				"type": "login",
-				"key": "login",
-				"title": "登录",
-				"logoutTitle": "登出",
-				"method": "basic",
-				"notification": "login",
-				"refreshes": ["settings", "content"]
-			}
-		]
-	},
-	{
-		"type": "group",
 		"title": "屏蔽",
-		"footer": "支持填写漫画 ID，或会出现在标题、作者、简介、类别等位置的文本；命中后将会于可见处隐藏，并适时阻止访问。",
+		"footer": "支持填写漫画 ID，或会出现在标题、作者、标签等位置的文本；命中后将隐藏内容。",
 		"items": [
 			{
 				"type": "editable-list",
