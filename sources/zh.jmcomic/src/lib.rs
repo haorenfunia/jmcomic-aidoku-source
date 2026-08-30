@@ -11,7 +11,6 @@ use aidoku::{
 	prelude::*,
 };
 
-mod home;
 mod models;
 mod net;
 mod settings;
@@ -248,20 +247,19 @@ fn direct_manga_result(api: &ApiContext, key: &str, block: &BlockState) -> Resul
 }
 
 fn parse_filters(filters: &[FilterValue]) -> (&str, &str, &str, &str) {
-	let mut category = "";
+	// Aidoku may omit filter defaults on the first browse request. Keep the
+	// source's requested landing view Korean latest in that case.
+	let mut category = "hanman";
 	let mut sort = "mr";
 	let mut time = "a";
 	let mut scope = "0";
 	for filter in filters {
 		if let FilterValue::Select { id, value } = filter {
-			if value.is_empty() {
-				continue;
-			}
 			match id.as_str() {
 				"category" | "language" => category = value,
-				"sort" => sort = value,
-				"time" => time = value,
-				"scope" | "type" => scope = value,
+				"sort" if !value.is_empty() => sort = value,
+				"time" if !value.is_empty() => time = value,
+				"scope" | "type" if !value.is_empty() => scope = value,
 				_ => {}
 			}
 		}
@@ -349,7 +347,6 @@ fn scramble_rows(ep_id: u64, filename: &str) -> u32 {
 
 register_source!(
 	JMComic,
-	Home,
 	ListingProvider,
 	ImageRequestProvider,
 	PageImageProcessor,
