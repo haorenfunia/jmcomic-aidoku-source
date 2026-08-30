@@ -66,7 +66,7 @@ impl ComicItem {
 					.or_else(|| img.attr("abs:src"))
 			})
 			.filter(|url| !url.contains("/blank.jpg"));
-		let title = element
+		let title: String = element
 			.select_first(".video-title")
 			.and_then(|node| node.text())
 			.or_else(|| element.select_first("img").and_then(|img| img.attr("title")))

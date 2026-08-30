@@ -1,7 +1,7 @@
 #![no_std]
 
 use aidoku::{
-	Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, HashMap, Home, ImageRequestProvider,
+	Chapter, DeepLinkHandler, DeepLinkResult, FilterValue, HashMap, ImageRequestProvider,
 	ImageResponse, Listing, ListingProvider, Manga, MangaPageResult, Page, PageContent, PageContext,
 	PageImageProcessor, Result, Source,
 	alloc::{String, Vec, format, vec},
